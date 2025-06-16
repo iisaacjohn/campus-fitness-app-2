@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chart_placeholder.dart';
 import '../widgets/custom_button.dart';
@@ -44,6 +45,12 @@ class _GymTrafficPredictionState extends State<GymTrafficPrediction> {
       appBar: AppBar(
         title: const Text('Gym Traffic Prediction'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/home');
+          },
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

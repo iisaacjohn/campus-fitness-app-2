@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_card.dart';
@@ -33,6 +34,12 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
       appBar: AppBar(
         title: const Text('Nutrition & Fitness Plans'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/home');
+          },
+        ),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [

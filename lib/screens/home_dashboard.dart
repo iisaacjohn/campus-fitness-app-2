@@ -11,7 +11,7 @@ class HomeDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Campus Fitness'),
+        title: const Text('Smart Fitness'),
         centerTitle: true,
         actions: [
           IconButton(

@@ -33,9 +33,9 @@ class LandingPage extends StatelessWidget {
                   const AppLogo(size: 120),
                   const SizedBox(height: 24),
                   Text(
-                    'Campus Fitness',
+                    'Smart Fitness',
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.white,
+                      color: AppColors.lightGreen,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -47,7 +47,7 @@ class LandingPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
-                      'Track campus gym busyness and get personalized fitness plans',
+                      'Track campus gym traffic and get personalized fitness plans',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: AppColors.white,
