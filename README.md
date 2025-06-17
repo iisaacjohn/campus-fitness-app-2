@@ -1,4 +1,4 @@
-# campus_fitness_app
+# Smart_fitness_app
 
 A new Flutter project.
 
