@@ -10,8 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
   
-  # Navigation
-  go_router: ^15.2.0
+  # Navigation - Updated to a more recent version
+  go_router: ^16.0.0
   
   # UI Components
   cupertino_icons: ^1.0.6
@@ -37,7 +37,17 @@ dependencies:
   flutter_screenutil: ^5.9.0
   
   # Local Notifications
-  flutter_local_notifications: ^19.2.1
+  flutter_local_notifications: ^19.3.0
+  
+  # Firebase
+  firebase_core: ^3.14.0
+  cloud_firestore: ^5.6.9
+  firebase_auth: ^5.6.0
+  firebase_storage: ^12.4.7
+  firebase_analytics: ^11.5.0
+  
+  # Additional utilities for Firebase
+  uuid: ^4.2.1
 
 dev_dependencies:
   flutter_test:
@@ -49,7 +59,6 @@ flutter:
   
   assets:
     - assets/images/
-    - assets/icons/
     - assets/animations/
   
   fonts:

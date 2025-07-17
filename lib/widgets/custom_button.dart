@@ -5,7 +5,7 @@ enum ButtonType { primary, secondary, outline }
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed; // Make this nullable
   final ButtonType type;
   final IconData? icon;
   final double width;
@@ -29,7 +29,7 @@ class CustomButton extends StatelessWidget {
           width: width,
           height: height,
           child: ElevatedButton(
-            onPressed: onPressed,
+            onPressed: onPressed, // This can now be null
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
               foregroundColor: AppColors.white,
@@ -45,7 +45,7 @@ class CustomButton extends StatelessWidget {
           width: width,
           height: height,
           child: ElevatedButton(
-            onPressed: onPressed,
+            onPressed: onPressed, // This can now be null
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryBlue,
               foregroundColor: AppColors.white,
@@ -61,7 +61,7 @@ class CustomButton extends StatelessWidget {
           width: width,
           height: height,
           child: OutlinedButton(
-            onPressed: onPressed,
+            onPressed: onPressed, // This can now be null
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primaryGreen,
               side: const BorderSide(color: AppColors.primaryGreen, width: 2),

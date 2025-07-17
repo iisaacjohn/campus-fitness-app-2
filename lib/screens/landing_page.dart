@@ -33,9 +33,9 @@ class LandingPage extends StatelessWidget {
                   const AppLogo(size: 120),
                   const SizedBox(height: 24),
                   Text(
-                    'Smart Fitness',
+                    'Campus Fitness',
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.lightGreen,
+                      color: AppColors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -67,7 +67,8 @@ class LandingPage extends StatelessWidget {
                     text: 'Student',
                     icon: Icons.school,
                     onPressed: () {
-                      context.go('/login?userType=Student');
+                      // Use Uri.encodeQueryComponent for proper encoding
+                      context.go('/login?userType=${Uri.encodeQueryComponent('Student')}');
                     },
                   ),
                   const SizedBox(height: 16),
@@ -76,7 +77,8 @@ class LandingPage extends StatelessWidget {
                     icon: Icons.person,
                     type: ButtonType.outline,
                     onPressed: () {
-                      context.go('/login?userType=Regular%20User');
+                      // Use Uri.encodeQueryComponent for proper encoding
+                      context.go('/login?userType=${Uri.encodeQueryComponent('Regular User')}');
                     },
                   ),
                   const Spacer(flex: 1),

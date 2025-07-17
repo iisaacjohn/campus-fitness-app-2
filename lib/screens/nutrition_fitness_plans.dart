@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/section_header.dart';
+import '../widgets/questionnaire_widget.dart';
+import '../widgets/loading_animation.dart';
+import '../models/questionnaire_model.dart';
+import '../services/hybrid_questionnaire_service.dart';
+import '../providers/app_provider.dart';
 
 class NutritionFitnessPlans extends StatefulWidget {
   const NutritionFitnessPlans({Key? key}) : super(key: key);
@@ -14,7 +20,9 @@ class NutritionFitnessPlans extends StatefulWidget {
 
 class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _showChatbot = false;
+  bool _showQuestionnaire = false;
+  QuestionnaireModel? _questionnaire;
+  bool _isLoadingQuestionnaire = false;
   
   @override
   void initState() {
@@ -26,6 +34,109 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadQuestionnaire() async {
+    setState(() {
+      _isLoadingQuestionnaire = true;
+    });
+
+    try {
+      final questionnaire = await HybridQuestionnaireService.getWorkoutQuestionnaire();
+      if (questionnaire != null) {
+        setState(() {
+          _questionnaire = questionnaire;
+          _showQuestionnaire = true;
+        });
+      } else {
+        _showError('Questionnaire not found.');
+      }
+    } catch (e) {
+      _showError('Failed to load questionnaire: $e');
+    } finally {
+      setState(() {
+        _isLoadingQuestionnaire = false;
+      });
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.primaryGreen,
+      ),
+    );
+  }
+
+  void _onQuestionnaireSubmit(Map<int, dynamic> answers, Map<int, String> followUpAnswers) async {
+    final appProvider = Provider.of<AppProvider>(context, listen: false);
+    final currentUser = appProvider.currentUser;
+
+    if (currentUser == null) {
+      _showError('Please log in to save your responses.');
+      return;
+    }
+
+    try {
+      print('Submitting questionnaire with answers: $answers');
+      print('Follow-up answers: $followUpAnswers');
+
+      // Use the new method that handles int to string conversion
+      final responseId = await HybridQuestionnaireService.saveQuestionnaireResponseFromIntKeys(
+        currentUser.id,
+        'workout',
+        answers,
+        followUpAnswers,
+      );
+      
+      if (responseId != null) {
+        setState(() {
+          _showQuestionnaire = false;
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Your personalized workout plan is being generated!'),
+            backgroundColor: AppColors.primaryGreen,
+          ),
+        );
+
+        // Generate workout plan based on responses
+        _generateWorkoutPlan(responseId, answers, followUpAnswers);
+      }
+    } catch (e) {
+      _showError('Failed to save your responses: $e');
+    }
+  }
+
+  void _generateWorkoutPlan(String responseId, Map<int, dynamic> answers, Map<int, String> followUpAnswers) {
+    // Show success dialog
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Plan Generated!'),
+        content: const Text('Your personalized workout plan has been created based on your preferences. Check your workout plans section to view it.'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -98,18 +209,19 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               const SizedBox(height: 16),
-                              CustomButton(
-                                text: 'Generate Workout Plan',
-                                icon: Icons.smart_toy,
-                                onPressed: () {
-                                  setState(() {
-                                    _showChatbot = true;
-                                  });
-                                },
-                              ),
+                              if (_isLoadingQuestionnaire)
+                                const Center(child: LoadingAnimation(size: 50))
+                              else
+                                CustomButton(
+                                  text: 'Generate Workout Plan',
+                                  icon: Icons.smart_toy,
+                                  onPressed: _loadQuestionnaire,
+                                ),
                             ],
                           ),
                         ),
+                        
+                        const SizedBox(height: 16),
                         
                         const SizedBox(height: 24),
                         
@@ -242,7 +354,7 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
                   ),
                 ),
                 
-                // Nutrition Tab
+                // Nutrition Tab (keeping the same content)
                 SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
@@ -285,9 +397,12 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
                                 icon: Icons.smart_toy,
                                 type: ButtonType.secondary,
                                 onPressed: () {
-                                  setState(() {
-                                    _showChatbot = true;
-                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Nutrition questionnaire coming soon!'),
+                                      backgroundColor: AppColors.primaryBlue,
+                                    ),
+                                  );
                                 },
                               ),
                             ],
@@ -456,106 +571,19 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
               ],
             ),
             
-            // Chatbot Overlay
-            if (_showChatbot)
+            // Questionnaire Overlay
+            if (_showQuestionnaire && _questionnaire != null)
               Container(
                 color: Colors.black.withOpacity(0.5),
                 child: Center(
-                  child: Container(
-                    margin: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryGreen,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.smart_toy,
-                                color: AppColors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Fitness Plan Generator',
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: AppColors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: AppColors.white,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _showChatbot = false;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'I\'ll help you create a personalized plan. Please answer a few questions:',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _buildChatbotQuestion(
-                                'What is your fitness goal?',
-                                ['Build Muscle', 'Lose Weight', 'Improve Fitness', 'Athletic Performance'],
-                              ),
-                              const SizedBox(height: 16),
-                              _buildChatbotQuestion(
-                                'How many days per week can you work out?',
-                                ['2-3 days', '3-4 days', '4-5 days', '6+ days'],
-                              ),
-                              const SizedBox(height: 16),
-                              _buildChatbotQuestion(
-                                'Where do you prefer to work out?',
-                                ['Campus Gym', 'Home/Dorm', 'Outdoors', 'Combination'],
-                              ),
-                              const SizedBox(height: 24),
-                              CustomButton(
-                                text: 'Generate My Plan',
-                                onPressed: () {
-                                  setState(() {
-                                    _showChatbot = false;
-                                  });
-                                  // Show success message
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Your personalized plan is being generated!'),
-                                      backgroundColor: AppColors.primaryGreen,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: QuestionnaireWidget(
+                    questionnaire: _questionnaire!,
+                    onSubmit: _onQuestionnaireSubmit,
+                    onCancel: () {
+                      setState(() {
+                        _showQuestionnaire = false;
+                      });
+                    },
                   ),
                 ),
               ),
@@ -641,41 +669,11 @@ class _NutritionFitnessPlansState extends State<NutritionFitnessPlans> with Sing
                     color: AppColors.textSecondary,
                   ),
                 ),
-              ],
+                ],
             ),
           ),
         ],
       ),
-    );
-  }
-  
-  Widget _buildChatbotQuestion(String question, List<String> options) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          question,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: options.map((option) {
-            return ChoiceChip(
-              label: Text(option),
-              selected: false,
-              onSelected: (selected) {
-                // Handle selection
-              },
-              backgroundColor: AppColors.white,
-              side: const BorderSide(color: AppColors.lightGreen),
-            );
-          }).toList(),
-        ),
-      ],
     );
   }
 }

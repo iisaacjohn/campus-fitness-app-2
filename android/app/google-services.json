@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "377595243502",
+    "project_id": "smartfitness-c99fa",
+    "storage_bucket": "smartfitness-c99fa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:377595243502:android:c9aaa6739273d8dd723cff",
+        "android_client_info": {
+          "package_name": "com.example.campus_fitness_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTOY8i0G3RWZKSF9boyAkADojFx1WUGLo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
